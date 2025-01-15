@@ -13,13 +13,30 @@ export class VpcStack extends cdk.Stack {
 
     const { settings } = props;
 
-    const vpc = new ec2.Vpc(this, `${process.env.PROJECT_NAME}`, {
+    const vpc = new ec2.Vpc(this, `${settings.projectName}-vpc`, {
+      vpcName: `${settings.projectName}-vpc`,
       ipAddresses: ec2.IpAddresses.cidr(settings.vpcCidr),
+      subnetConfiguration: [
+        {
+          cidrMask: 24,
+          name: 'PublicSubnetA',
+          subnetType: ec2.SubnetType.PUBLIC,
+        },
+        {
+          cidrMask: 24,
+          name: 'PrivateSubnetA',
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+        },
+      ],
+      natGateways: 0,
       availabilityZones: ['eu-north-1a'],
+      restrictDefaultSecurityGroup: false,
     });
 
-    const privateSubnet = vpc.selectSubnets({
-      subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-    });
+    // const privateSubnet = new ec2.Subnet(this, 'privateSubnetB', {
+    //   cidrBlock: settings.privateSubnetCidr,
+    //   vpcId: vpc.vpcId,
+    //   availabilityZone: 'eu-north-1b',
+    // });
   }
 }
