@@ -4,7 +4,8 @@ export interface Settings {
   projectName: string;
   stage: string;
   vpcCidr: string;
-  privateSubnetCidr: string;
+  natInstance: boolean;
+  natInstanceAmiID: string;
 }
 
 export function loadSettings(): Settings {
@@ -13,7 +14,9 @@ export function loadSettings(): Settings {
   const projectName = process.env.PROJECT_NAME || '';
   const stage = process.env.PROJECT_STAGE || '';
   const vpcCidr = process.env.VPC_CIDR || '10.10.0.0/16';
-  const privateSubnetCidr = process.env.PRV_SUBNET_CIDR || '10.10.0.0/24';
 
-  return { projectName, stage, vpcCidr, privateSubnetCidr };
+  const natInstance = false;
+  const natInstanceAmiID = 'ami-001b36cbc16911c13';
+
+  return { projectName, stage, vpcCidr, natInstance, natInstanceAmiID };
 }
