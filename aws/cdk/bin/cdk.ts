@@ -8,6 +8,7 @@ import { BackupStack } from '../src/stacks/backup-stack';
 import { SSMStack } from '../src/stacks/ssm-stack';
 import { RdsStack } from '../src/stacks/rds-stack';
 import { EcsStack } from '../src/stacks/ecs-stack';
+import { Ec2Stack } from '../src/stacks/ec2-stack';
 
 const settings: Settings = loadSettings();
 const env = {
@@ -17,6 +18,7 @@ const env = {
 
 const createApp = (settings: Settings) => {
   const app = new cdk.App();
+
   const backupStack = new BackupStack(app, 'backupStack', { settings, env });
   const ssmStack = new SSMStack(app, 'ssmStack', { settings, env });
   const vpcStack = new VpcStack(app, 'vpcStack', {
@@ -33,6 +35,12 @@ const createApp = (settings: Settings) => {
     settings,
     env,
     vpc: vpcStack.vpc,
+  });
+  const ec2Stack = new Ec2Stack(app, 'ec2Stack', {
+    settings,
+    env,
+    vpc: vpcStack.vpc,
+    ssmRole: ssmStack.ssmRole,
   });
 };
 

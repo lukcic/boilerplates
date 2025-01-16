@@ -8,6 +8,7 @@ export interface ssmStackProps extends StackProps {
 
 export class SSMStack extends Stack {
   ssmProfileId: string;
+  ssmRole: aws_iam.Role;
 
   constructor(scope: Construct, id: string, props: ssmStackProps) {
     super(scope, id, props);
