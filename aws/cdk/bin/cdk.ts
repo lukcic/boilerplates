@@ -6,6 +6,7 @@ import { loadSettings } from '../src/settings';
 import { VpcStack } from '../src/stacks/vpc-stack';
 import { BackupStack } from '../src/stacks/backup-stack';
 import { SSMStack } from '../src/stacks/ssm-stack';
+import { RdsStack } from '../src/stacks/rds-stack';
 
 const settings: Settings = loadSettings();
 const env = {
@@ -21,6 +22,11 @@ const createApp = (settings: Settings) => {
     settings,
     env,
     ssmProfileId: ssmStack.ssmProfileId,
+  });
+  const rdsStack = new RdsStack(app, 'rdsStack', {
+    settings,
+    env,
+    vpc: vpcStack.vpc,
   });
 };
 

@@ -11,11 +11,9 @@ export class BackupStack extends Stack {
   constructor(scope: Construct, id: string, props: BackupStackProps) {
     super(scope, id, props);
 
-    const { settings } = props;
-
     const backupRole = new aws_iam.Role(
       this,
-      `${settings.projectName}-${settings.stage}-backup_role`,
+      `${props.settings.projectName}-${props.settings.stage}-backup_role`,
       {
         assumedBy: new aws_iam.ServicePrincipal('backup.amazonaws.com'),
         managedPolicies: [
@@ -36,19 +34,19 @@ export class BackupStack extends Stack {
     );
 
     const backupPlan =
-      settings.stage === 'production'
+      props.settings.stage === 'production'
         ? aws_backup.BackupPlan.dailyMonthly1YearRetention(
             this,
-            `${settings.projectName}-${settings.stage}-dailyMonthly1YearRetention`
+            `${props.settings.projectName}-${props.settings.stage}-dailyMonthly1YearRetention`
           )
         : aws_backup.BackupPlan.daily35DayRetention(
             this,
-            `${settings.projectName}-${settings.stage}-daily35DayRetention`
+            `${props.settings.projectName}-${props.settings.stage}-daily35DayRetention`
           );
 
     const backupSelection = new aws_backup.BackupSelection(
       this,
-      `${settings.projectName}-${settings.stage}-backup_selection`,
+      `${props.settings.projectName}-${props.settings.stage}-backup_selection`,
       {
         backupPlan: backupPlan,
         allowRestores: true,

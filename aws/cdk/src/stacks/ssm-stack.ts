@@ -12,15 +12,13 @@ export class SSMStack extends Stack {
   constructor(scope: Construct, id: string, props: ssmStackProps) {
     super(scope, id, props);
 
-    const { settings } = props;
-
     const ssmInstanceCore = aws_iam.ManagedPolicy.fromAwsManagedPolicyName(
       'AmazonSSMManagedInstanceCore'
     );
 
     const ssmRole = new aws_iam.Role(
       this,
-      `${settings.projectName}-${settings.stage}-ssm_role`,
+      `${props.settings.projectName}-${props.settings.stage}-ssm_role`,
       {
         assumedBy: new aws_iam.ServicePrincipal('ec2.amazonaws.com'),
       }
@@ -30,7 +28,7 @@ export class SSMStack extends Stack {
 
     const ssmInstanceProfile = new aws_iam.CfnInstanceProfile(
       this,
-      `${settings.projectName}-${settings.stage}-ssm_instance_profile`,
+      `${props.settings.projectName}-${props.settings.stage}-ssm_instance_profile`,
       {
         roles: [ssmRole.roleName],
       }

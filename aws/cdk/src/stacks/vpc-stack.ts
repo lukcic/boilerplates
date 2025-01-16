@@ -11,17 +11,17 @@ export interface VpcStackProps extends StackProps {
 
 export class VpcStack extends Stack {
   ssmProfileId: string;
+  vpc: ec2.Vpc;
+
   constructor(scope: Construct, id: string, props: VpcStackProps) {
     super(scope, id, props);
 
-    const { settings } = props;
-
-    const vpc = new ec2.Vpc(
+    this.vpc = new ec2.Vpc(
       this,
-      `${settings.projectName}-${settings.stage}-vpc`,
+      `${props.settings.projectName}-${props.settings.stage}-vpc`,
       {
-        vpcName: `${settings.projectName}-vpc`,
-        ipAddresses: ec2.IpAddresses.cidr(settings.vpcCidr),
+        vpcName: `${props.settings.projectName}-vpc`,
+        ipAddresses: ec2.IpAddresses.cidr(props.settings.vpcCidr),
         subnetConfiguration: [
           {
             cidrMask: 24,
@@ -40,18 +40,12 @@ export class VpcStack extends Stack {
       }
     );
 
-    // const privateSubnet = new ec2.Subnet(this, 'privateSubnetB', {
-    //   cidrBlock: settings.privateSubnetCidr,
-    //   vpcId: vpc.vpcId,
-    //   availabilityZone: 'eu-north-1b',
-    // });
-
-    if (settings.natInstance) {
+    if (props.settings.natInstance) {
       const natGatewaySG = new ec2.SecurityGroup(
         this,
-        `${settings.projectName}-${settings.stage}-nat_gateway_sg`,
+        `${props.settings.projectName}-${props.settings.stage}-nat_gateway_sg`,
         {
-          vpc: vpc,
+          vpc: this.vpc,
           allowAllOutbound: false,
           description: 'Security group for Nat instance',
         }
@@ -70,45 +64,45 @@ export class VpcStack extends Stack {
       );
 
       natGatewaySG.addIngressRule(
-        ec2.Peer.ipv4(settings.vpcCidr),
+        ec2.Peer.ipv4(props.settings.vpcCidr),
         ec2.Port.tcp(80),
         'Allow inbound HTTP only from VPC network'
       );
 
       natGatewaySG.addIngressRule(
-        ec2.Peer.ipv4(settings.vpcCidr),
+        ec2.Peer.ipv4(props.settings.vpcCidr),
         ec2.Port.tcp(443),
         'Allow inbound HTTPS only from VPC network'
       );
 
       const natInstance = new ec2.CfnInstance(
         this,
-        `${settings.projectName}-${settings.stage}-nat_instance`,
+        `${props.settings.projectName}-${props.settings.stage}-nat_instance`,
         {
-          imageId: settings.natInstanceAmiID,
+          imageId: props.settings.natInstanceAmiID,
           tags: [
             {
               key: 'Name',
-              value: `${settings.projectName}-${settings.stage}-nat_instance`,
+              value: `${props.settings.projectName}-${props.settings.stage}-nat_instance`,
             },
           ],
           instanceType: new ec2.InstanceType('t3.nano').toString(),
-          subnetId: vpc.publicSubnets[0].subnetId,
+          subnetId: this.vpc.publicSubnets[0].subnetId,
           securityGroupIds: [natGatewaySG.securityGroupId],
           sourceDestCheck: false, // Required for NAT
-          iamInstanceProfile: this.ssmProfileId,
+          iamInstanceProfile: props.ssmProfileId,
         }
       );
 
       const natEip = new ec2.CfnEIP(
         this,
-        `${settings.projectName}-${settings.stage}-nat_eip`,
+        `${props.settings.projectName}-${props.settings.stage}-nat_eip`,
         {}
       );
 
       new ec2.CfnEIPAssociation(
         this,
-        `${settings.projectName}-${settings.stage}-nat_eip_association`,
+        `${props.settings.projectName}-${props.settings.stage}-nat_eip_association`,
         {
           eip: natEip.ref,
           instanceId: natInstance.ref,
