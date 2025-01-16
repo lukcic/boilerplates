@@ -2,7 +2,6 @@ import { Stack, StackProps } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import { Settings } from '../settings';
-import { CfnInstanceProfile } from 'aws-cdk-lib/aws-iam';
 
 export interface VpcStackProps extends StackProps {
   settings: Settings;

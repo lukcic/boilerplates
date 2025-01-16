@@ -1,5 +1,4 @@
 import { Stack, StackProps, aws_backup, aws_iam } from 'aws-cdk-lib';
-import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 import { Settings } from '../settings';
 
