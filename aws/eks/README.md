@@ -231,3 +231,9 @@ source_profile = manager
 ```sh
 aws eks update-kubeconfig --region eu-central-1 --name staging-demo --profile eks-admin
 ```
+
+## Add-on
+
+```sh
+aws eks describe-addon-versions --region 'eu-central-1' --addon-name eks-pod-identity-agent
+```
