@@ -33,14 +33,14 @@ resource "aws_eks_cluster" "eks" {
     endpoint_private_access = false
     endpoint_public_access  = true
 
-    subnet_ids = [                          # min 2 availability zones
-      aws_subnet.private_zone1.id,          # EKS will create cross-account ENIs for connection with COntrol plane
+    subnet_ids = [                 # min 2 availability zones
+      aws_subnet.private_zone1.id, # EKS will create cross-account ENIs for connection with COntrol plane
       aws_subnet.private_zone2.id
     ]
   }
 
   access_config {
-    authentication_mode = "API"                                 # AWS ConfigMap is deprecated
-    bootstrap_cluster_creator_admin_permissions = true          # admin permissions for Terraform user, required for using Helm with Tf
+    authentication_mode                         = "API" # AWS ConfigMap is deprecated
+    bootstrap_cluster_creator_admin_permissions = true  # admin permissions for Terraform user, required for using Helm with Tf
   }
 }
