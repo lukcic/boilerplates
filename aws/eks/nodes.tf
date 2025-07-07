@@ -36,7 +36,10 @@ resource "aws_iam_role_policy_attachment" "amazon_ec2_container_registry_ro" {
   role       = aws_iam_role.nodes.name
 }
 
-# ASG for nodes
+# Node groups (ASG for nodes):
+# self-managed - build own AMIs
+# aws managed 
+# Fargate - dedicated node for each pod (expensive)
 resource "aws_eks_node_group" "general" {
     cluster_name = aws_eks_cluster.eks.name
     version = local.eks_ver
@@ -51,9 +54,21 @@ resource "aws_eks_node_group" "general" {
     capacity_type = "ON_DEMAND"
     instance_types = ["t3.large"]
 
-    scaling_config {
+    scaling_config {        # cluster autoscaler must be added, it will be adjusting desired_size
       desired_size = 1
       max_size = 5
       min_size = 0
-    } 
+    }
+
+    update_config {
+      max_unavailable = 1 # used for cluster upgrades
+    }
+
+    labels = {
+      role = "general" # node labels for pod affinity and node selectors
+    }
+
+    lifecycle {
+      ignore_changes = [ scaling_config[0].desired_size ]
+    }
 }
