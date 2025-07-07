@@ -1,0 +1,47 @@
+import requests, json, os
+import requests.auth
+from functools import lru_cache
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+DOMAIN=os.environ.get("DOMAIN")
+JIRA_USERNAME=os.environ.get("JIRA_USERNAME")
+JIRA_PASSWORD=os.environ.get("JIRA_PASSWORD")
+
+@lru_cache(maxsize=10000)
+def get_issue_key(issue_id):
+    """Fetch Jira Issue Key based on issue id.
+
+    :param issue_id: User ID in Jira.
+    :return: Issue key stored in 'key' field.
+    """       
+    response = requests.get(
+        f"https://{DOMAIN}.atlassian.net/rest/api/3/issue/{issue_id}",
+        headers = {"Accept": "application/json"},
+        auth = requests.auth.HTTPBasicAuth(JIRA_USERNAME, JIRA_PASSWORD)
+    )
+    response.raise_for_status()
+    response_json = json.loads(response.text)
+    issue_key = response_json.get("key")
+    return issue_key
+
+def insert_issue_keys(worklogs, max_threads=7):
+    """Extend worklog dictionary with issue keys.
+
+    :param worklogs: List of worklog dictionaries.
+    :return: List of extended worklog dictionaries.
+    """       
+    print("Updating worklogs with issue ids.")
+    with ThreadPoolExecutor(max_threads) as executor:
+        future_to_worklog = {
+            executor.submit(get_issue_key, worklog["issue"].get("id")): worklog 
+            for worklog in worklogs if "issue" and worklog and worklog["issue"].get("id")
+        }
+        for future in as_completed(future_to_worklog):
+            worklog = future_to_worklog[future]
+            try:
+                worklog["issue"]["key"] = future.result()
+            except Exception as e:
+                print(f"Error: {e}")
+                raise SystemExit(1)
+    print("Done.")  
+    return worklogs
